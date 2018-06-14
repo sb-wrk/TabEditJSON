@@ -7,129 +7,91 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using ScintillaNET;
+using FastColoredTextBoxNS;
 
 namespace TabEdit
 {
     public partial class UserControl1 : UserControl
     {
-        //TextStyle BlueStyle = new TextStyle(Brushes.Blue, null, FontStyle.Regular);
-        //TextStyle BoldStyle = new TextStyle(null, null, FontStyle.Bold | FontStyle.Underline);
-        //TextStyle GrayStyle = new TextStyle(Brushes.Gray, null, FontStyle.Regular);
-        //TextStyle MagentaStyle = new TextStyle(Brushes.Magenta, null, FontStyle.Regular);
-        //TextStyle GreenStyle = new TextStyle(Brushes.Green, null, FontStyle.Italic);
-        //TextStyle BrownStyle = new TextStyle(Brushes.Brown, null, FontStyle.Italic);
-        //TextStyle MaroonStyle = new TextStyle(Brushes.Maroon, null, FontStyle.Regular);
-        //MarkerStyle SameWordsStyle = new MarkerStyle(new SolidBrush(Color.FromArgb(40, Color.Gray)));
+        TextStyle BlueStyle = new TextStyle(Brushes.Blue, null, FontStyle.Regular);
+        TextStyle BoldStyle = new TextStyle(null, null, FontStyle.Bold | FontStyle.Underline);
+        TextStyle GrayStyle = new TextStyle(Brushes.DarkGray, null, FontStyle.Regular);
+        TextStyle MagentaStyle = new TextStyle(Brushes.Magenta, null, FontStyle.Regular);
+        TextStyle GreenStyle = new TextStyle(Brushes.Green, null, FontStyle.Italic);
+        TextStyle BrownStyle = new TextStyle(Brushes.Brown, null, FontStyle.Regular);
+        TextStyle MaroonStyle = new TextStyle(Brushes.Maroon, null, FontStyle.Regular);
+        MarkerStyle SameWordsStyle = new MarkerStyle(new SolidBrush(Color.FromArgb(40, Color.Gray)));
 
         public UserControl1()
         {
             InitializeComponent();
+            tb = new FastColoredTextBox();
+            this.Dock = DockStyle.Fill;
+            this.AutoSize = true;
+            tb.AutoSize = true;
+            tb.Dock = DockStyle.Fill;
+            this.Controls.Add(tb);
 
-            textBox = new ScintillaNET.Scintilla();
-            this.Controls.Add(textBox);
-            textBox.Dock = System.Windows.Forms.DockStyle.Fill;
-            textBox.TextChanged += TextBox_TextChanged;
-            //tb = new FastColoredTextBox();
-            //tb.AutoSize = true;
-            //tb.Dock = DockStyle.Fill;
-            //this.Controls.Add(tb);
-            //tb.TextChanged += Tb_TextChanged;
-            InitSyntaxColoring();
+            tb.TextChanged += Tb_TextChanged;
+            tb.SelectionChangedDelayed += Tb_SelectionChangedDelayed;
+
+            tb.Range.SetStyle(new ReadOnlyStyle(), @"[\s\w]+: ");
         }
 
-
-        private void InitSyntaxColoring()
+        private void Tb_SelectionChangedDelayed(object sender, EventArgs e)
         {
-            textBox.StyleResetDefault();
-            textBox.Styles[Style.Json.Default].ForeColor = Color.Silver;
-            textBox.Styles[Style.Json.BlockComment].ForeColor = Color.FromArgb(0, 128, 0); // Green
-            textBox.Styles[Style.Json.LineComment].ForeColor = Color.FromArgb(0, 128, 0); // Green
-            textBox.Styles[Style.Json.Number].ForeColor = Color.Olive;
-            textBox.Styles[Style.Json.PropertyName].ForeColor = Color.Blue;
-            textBox.Styles[Style.Json.String].ForeColor = Color.FromArgb(163, 21, 21); // Red
-            textBox.Styles[Style.Json.StringEol].BackColor = Color.Pink;
-            textBox.Styles[Style.Json.Operator].ForeColor = Color.Purple;
-            textBox.Lexer = Lexer.Json;
-
-            textBox.Styles[Style.BraceLight].BackColor = Color.LightGray;
-            textBox.Styles[Style.BraceLight].ForeColor = Color.BlueViolet;
-            textBox.Styles[Style.BraceBad].ForeColor = Color.Red;
-            textBox.Styles[Style.Default].Font = "Consolas";
-            textBox.Styles[Style.Default].Size = 10;
-
-            textBox.UpdateUI += TextBox_UpdateUI;
-        }
-
-        private void TextBox_UpdateUI(object sender, UpdateUIEventArgs e)
-        {
-            // Has the caret changed position?
-            var caretPos = textBox.CurrentPosition;
-            if (lastCaretPos != caretPos)
+            tb.VisibleRange.ClearStyle(SameWordsStyle);
+            if (!tb.Selection.IsEmpty)
             {
-                lastCaretPos = caretPos;
-                var bracePos1 = -1;
-                var bracePos2 = -1;
-
-                // Is there a brace to the left or right?
-                if (caretPos > 0 && IsBrace(textBox.GetCharAt(caretPos - 1)))
-                    bracePos1 = (caretPos - 1);
-                else if (IsBrace(textBox.GetCharAt(caretPos)))
-                    bracePos1 = caretPos;
-
-                if (bracePos1 >= 0)
-                {
-                    // Find the matching brace
-                    bracePos2 = textBox.BraceMatch(bracePos1);
-                    if (bracePos2 == Scintilla.InvalidPosition)
-                        textBox.BraceBadLight(bracePos1);
-                    else
-                        textBox.BraceHighlight(bracePos1, bracePos2);
-                }
-                else
-                {
-                    // Turn off brace matching
-                    textBox.BraceHighlight(Scintilla.InvalidPosition, Scintilla.InvalidPosition);
-                }
-            }
-        }
-
-        private void TextBox_TextChanged(object sender, EventArgs e)
-        {
-            var maxLineNumberCharLength = textBox.Lines.Count.ToString().Length;
-            if (maxLineNumberCharLength == this.maxLineNumberCharLength)
                 return;
-
-            // Calculate the width required to display the last line number
-            // and include some padding for good measure.
-            const int padding = 2;
-            textBox.Margins[0].Width = textBox.TextWidth(Style.LineNumber, new string('9', maxLineNumberCharLength + 1)) + padding;
-            this.maxLineNumberCharLength = maxLineNumberCharLength;
-        }
-
-        int lastCaretPos = 0;
-        private int maxLineNumberCharLength;
-
-
-        private static bool IsBrace(int c)
-        {
-            switch (c)
-            {
-                case '[':
-                case ']':
-                case '{':
-                case '}':
-                    return true;
             }
 
-            return false;
+            //get fragment around caret
+            var fragment = tb.Selection.GetFragment(@"\w");
+            string text = fragment.Text;
+            if (text.Length == 0)
+            {
+                return;
+            }
+            //highlight same words
+            var ranges = tb.VisibleRange.GetRanges("\\b" + text + "\\b").ToArray();
+            if (ranges.Length > 1)
+            {
+                foreach (var r in ranges)
+                {
+                    r.SetStyle(SameWordsStyle);
+                }
+            }
         }
 
-        ScintillaNET.Scintilla textBox;
+        private void Tb_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            //tb.ClearStylesBuffer();
+
+            tb.LeftBracket = '{';
+            tb.RightBracket = '}';
+            tb.LeftBracket2 = '[';
+            tb.RightBracket2 = ']';
+            Range range = (sender as FastColoredTextBox).VisibleRange;
+            range.ClearStyle(BlueStyle, BoldStyle, GrayStyle, MagentaStyle, GreenStyle, BrownStyle);
+            range.SetStyle(MagentaStyle, @"\b""?(true|false|null)""?\b");
+            range.SetStyle(BrownStyle, @"""""|@""""|''|@"".*?""|(?<!@)(?<range>"".*?[^\\]"")|'.*?[^\\]'");
+            range.SetStyle(MagentaStyle, @"\b\d+[\.]?\d*([eE]\-?\d+)?[lLdDfF]?\b|\b0x[a-fA-F\d]+\b");
+            
+
+            range.ClearFoldingMarkers();
+            range.SetFoldingMarkers("{", "}");//allow to collapse brackets block
+
+        }
+
+ 
+
+        FastColoredTextBox tb;
 
         public void setContent(string text)
         {
-            this.textBox.Text = text;
+            this.tb.Text = text;
+            Tb_TextChanged(tb, null);
         }
 
         private void UserControl1_Load(object sender, EventArgs e)
