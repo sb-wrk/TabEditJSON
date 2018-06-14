@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27703.2026
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TabEdit", "TabEdit\TabEdit.csproj", "{5B0917F1-8740-4B53-821B-961215BF905A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5B0917F1-8740-4B53-821B-961215BF905A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5B0917F1-8740-4B53-821B-961215BF905A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5B0917F1-8740-4B53-821B-961215BF905A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5B0917F1-8740-4B53-821B-961215BF905A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {F43EE645-B47E-4BFF-AAA2-D808072FBF83}
+	EndGlobalSection
+EndGlobal
